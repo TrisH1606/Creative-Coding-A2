@@ -1,0 +1,280 @@
+# ------------------------------------------------------------
+#  "Brushed snares & 909's"
+#  Style nods: Berlioz / Dubot (swung hats, Rhodes + Wurlitzer
+#  chords, brass and trumpet stabs over a four-on-the-floor kick)
+#  Key:     D minor
+#  Tempo:   128 BPM, 4/4
+#  Length:  80 bars x 4 beats = 320 beats = 150 seconds = 2:30
+# ------------------------------------------------------------
+
+from earsketch import *
+
+setTempo(128)
+
+# ------------------------------------------------------------
+#  SOUNDS
+# ------------------------------------------------------------
+
+# Drums and percussion
+kick      = OS_KICK06
+clap      = OS_CLAP01
+ghost     = OS_SNARE03          # played quietly, like a brushed snare
+hatClosed = OS_CLOSEDHAT04
+hatOpen   = OS_OPENHAT04
+crash     = Y01_CRASH_1
+mainBeat  = RD_UK_HOUSE_MAINBEAT_24
+fillA     = RD_UK_HOUSE_SOLODRUMPART_5
+fillB     = HOUSE_BREAK_FILL_001
+whoosh    = HOUSE_SFX_WHOOSH_001
+
+# Bass
+bassA = RD_UK_HOUSE_ANALOGBASS_1
+bassB = HOUSE_ROADS_BASS_001
+
+# Jazz keys
+rhodes1   = RD_RNB_KEYSRHODES_1       # D minor (i tonic chord)
+rhodes2   = RD_RNB_KEYSRHODES_7       # D minor
+rhodes3   = RD_RNB_KEYSRHODES_9       # D minor
+wurli1    = RD_UK_HOUSE_WURLITZER_1   # D minor
+wurli2    = RD_UK_HOUSE_WURLITZER_2   # A minor (v, minor dominant chord)
+wurli3    = RD_UK_HOUSE_WURLITZER_3   # D minor
+wurli4    = RD_UK_HOUSE_WURLITZER_4   # E minor (ii diminished chord)
+warmPiano = RD_UK_HOUSE__WARMPIANO_1
+warmPiano2 = RD_UK_HOUSE__WARMPIANO_2
+ePiano    = YG_TECHNO_ELECTRIC_PIANO_2
+
+# Horns
+brass1    = Y37_BRASS_1
+brass2    = Y37_BRASS_2
+brass3    = Y37_BRASS_3
+trumpet   = YG_RNB_FUNK_TRUMPET_1
+horns     = YG_NEW_HIP_HOP_BRASS_1
+
+# Colour: pads, synths, guitar
+pad       = RD_UK_HOUSE__AIRYPAD_1
+evolvePad = RD_UK_HOUSE__EVOLVEPAD_1
+arpPluck  = RD_UK_HOUSE__ARPPLUCK_1
+arpLead   = RD_UK_HOUSE__ARPLEAD_1
+acid      = RD_UK_HOUSE__ACIDLINE_1
+guitar    = RD_UK_HOUSE_ACOUSTICGUITAR_1
+guitar2   = RD_UK_HOUSE_ACOUSTICGUITAR_2
+
+# ------------------------------------------------------------
+#  TRACK NUMBERS
+# ------------------------------------------------------------
+KICK, CLAP, HAT, OPENHAT, LOOP, FILL = 1, 2, 3, 4, 5, 6
+BASS, RHODES, WURLI, PIANO, PAD, BRASS = 7, 8, 9, 10, 11, 12
+TRUMPET, ARP, GUITAR, FX, GHOST, ACID = 13, 14, 15, 16, 17, 18
+ANSWER = 19
+
+# ------------------------------------------------------------
+#  RHYTHM PATTERNS (16 steps per measure)
+# ------------------------------------------------------------
+fourOnFloor = "0---0---0---0---"
+clapPattern = "----0-------0---"
+swingHat    = "0-00-00-0-00-00-"      # skipping, swung feel
+offbeatOpen = "--0---0---0---0-"
+ghostNotes  = "-----0-------0-0"      # brushed-snare ghost notes
+bassStabs   = "0+++--0+++--0+--"
+hornStabs   = "0++---0+----0+--"
+hornAnswer  = "----0+++------0+"
+lightHat    = "0---0---0---0---"
+
+
+
+def beatEvery(sound, track, start, end, pattern):
+    # Repeat a one-bar rhythm pattern for every measure in a section
+    for measure in range(start, end):
+        makeBeat(sound, track, measure, pattern)
+
+def place(sound, track, a, b, limit):
+    # fitMedia that never runs past the end of its section
+    if a < limit:
+        fitMedia(sound, track, a, min(b, limit))
+
+def drumsLight(start, end):
+    # Hats and a quiet ghost snare only (intro, bridge, outro)
+    beatEvery(hatClosed, HAT, start, end, lightHat)
+    beatEvery(ghost, GHOST, start, end, ghostNotes)
+
+def drumsFull(start, end):
+    # Full house groove with swung hats
+    beatEvery(kick, KICK, start, end, fourOnFloor)
+    beatEvery(clap, CLAP, start, end, clapPattern)
+    beatEvery(hatClosed, HAT, start, end, swingHat)
+    beatEvery(hatOpen, OPENHAT, start, end, offbeatOpen)
+    beatEvery(ghost, GHOST, start, end, ghostNotes)
+    fitMedia(mainBeat, LOOP, start, end)
+
+def drumFill(measure):
+    # One-bar drum fill on the last bar of a phrase
+    fitMedia(fillA, FILL, measure, measure + 1)
+
+def jazzChords(start, end):
+    # 8-bar chord cycle. The Wurlitzer clips in A minor and E minor
+    # sit over the D minor bass and give a modal, jazzy lift.
+    # Cycle: D minor (4 bars) / A minor (2 bars) / E minor (1 bar) / D minor (1 bar)
+    for bar in range(start, end, 8):
+        place(wurli1, WURLI, bar,     bar + 4, end)
+        place(wurli2, WURLI, bar + 4, bar + 6, end)
+        place(wurli4, WURLI, bar + 6, bar + 7, end)
+        place(wurli3, WURLI, bar + 7, bar + 8, end)
+
+def rhodesComp(start, end):
+    # Rhodes comping: clips alternate every 4 bars
+    for bar in range(start, end, 8):
+        place(rhodes1, RHODES, bar,     bar + 4, end)
+        place(rhodes2, RHODES, bar + 4, bar + 8, end)
+
+def bassline(start, end):
+    for bar in range(start, end, 8):
+        place(bassA, BASS, bar,     bar + 4, end)
+        place(bassB, BASS, bar + 4, bar + 8, end)
+
+def hornSection(start, end):
+    # Syncopated brass stabs with a trumpet answer
+    for measure in range(start, end):
+        makeBeat(brass1, BRASS, measure, hornStabs)
+        makeBeat(horns, ANSWER, measure, hornAnswer)
+
+# ------------------------------------------------------------
+#  SECTIONS
+# ------------------------------------------------------------
+
+def intro(start, end):                      # bars 1-8
+    fitMedia(rhodes1, RHODES, start, start + 4)
+    fitMedia(rhodes3, RHODES, start + 4, end)
+    fitMedia(pad, PAD, start, end)
+    drumsLight(start, end)
+    fitMedia(guitar, GUITAR, start + 4, end)
+
+def build(start, end):                      # bars 9-16
+    jazzChords(start, end)
+    rhodesComp(start, end)
+    fitMedia(pad, PAD, start, end)
+    beatEvery(kick, KICK, start + 4, end, fourOnFloor)
+    beatEvery(hatClosed, HAT, start, end, swingHat)
+    beatEvery(ghost, GHOST, start, end, ghostNotes)
+    bassline(start + 4, end)
+    drumFill(end - 1)
+    fitMedia(whoosh, FX, end - 2, end)
+
+def grooveA(start, end):                    # bars 17-32
+    drumsFull(start, end)
+    bassline(start, end)
+    jazzChords(start, end)
+    rhodesComp(start, end)
+    fitMedia(pad, PAD, start, end)
+    fitMedia(brass2, BRASS, start + 8, end)
+    fitMedia(crash, FX, start, start + 1)
+    drumFill(start + 7)
+    drumFill(end - 1)
+
+def breakdown(start, end):                  # bars 33-40
+    fitMedia(warmPiano, PIANO, start, start + 4)
+    fitMedia(warmPiano2, PIANO, start + 4, end)
+    fitMedia(trumpet, TRUMPET, start, end)
+    fitMedia(evolvePad, PAD, start, end)
+    fitMedia(guitar2, GUITAR, start, end)
+    beatEvery(hatClosed, HAT, start + 4, end, lightHat)
+    fitMedia(whoosh, FX, end - 2, end)
+    fitMedia(fillB, FILL, end - 1, end)
+
+def dropB(start, end):                      # bars 41-56
+    drumsFull(start, end)
+    bassline(start, end)
+    jazzChords(start, end)
+    rhodesComp(start, end)
+    hornSection(start, end)
+    fitMedia(arpPluck, ARP, start, start + 8)
+    fitMedia(arpLead, ARP, start + 8, end)
+    fitMedia(trumpet, TRUMPET, start + 8, end)
+    fitMedia(crash, FX, start, start + 1)
+    drumFill(start + 7)
+    drumFill(end - 1)
+
+def bridge(start, end):                     # bars 57-64
+    fitMedia(warmPiano, PIANO, start, start + 4)
+    fitMedia(ePiano, PIANO, start + 4, end)
+    fitMedia(pad, PAD, start, end)
+    fitMedia(guitar, GUITAR, start, end)
+    fitMedia(acid, ACID, start + 4, end)
+    beatEvery(hatClosed, HAT, start, end, swingHat)
+    beatEvery(ghost, GHOST, start, end, ghostNotes)
+    beatEvery(kick, KICK, start + 4, end, fourOnFloor)
+    fitMedia(whoosh, FX, end - 2, end)
+    drumFill(end - 1)
+
+def finale(start, end):                     # bars 65-76
+    drumsFull(start, end)
+    bassline(start, end)
+    jazzChords(start, end)
+    rhodesComp(start, end)
+    hornSection(start, end)
+    fitMedia(brass3, ANSWER, start + 4, end)
+    fitMedia(arpLead, ARP, start, end)
+    fitMedia(acid, ACID, start + 4, end)
+    fitMedia(trumpet, TRUMPET, start, end)
+    fitMedia(crash, FX, start, start + 1)
+    drumFill(start + 7)
+    drumFill(end - 1)
+
+def outro(start, end):                      # bars 77-80
+    fitMedia(rhodes1, RHODES, start, end)
+    fitMedia(pad, PAD, start, end)
+    fitMedia(guitar2, GUITAR, start, end)
+    drumsLight(start, end)
+    fitMedia(crash, FX, start, start + 1)
+
+# ------------------------------------------------------------
+#  ARRANGEMENT  (80 bars = 2:30 at 128 BPM)
+# ------------------------------------------------------------
+intro(1, 9)
+build(9, 17)
+grooveA(17, 33)
+breakdown(33, 41)
+dropB(41, 57)
+bridge(57, 65)
+finale(65, 77)
+outro(77, 81)
+
+# ------------------------------------------------------------
+#  MIXING
+# ------------------------------------------------------------
+# Levels (dB)
+setEffect(KICK,    VOLUME, GAIN, -2)
+setEffect(CLAP,    VOLUME, GAIN, -6)
+setEffect(HAT,     VOLUME, GAIN, -10)
+setEffect(OPENHAT, VOLUME, GAIN, -12)
+setEffect(GHOST,   VOLUME, GAIN, -16)
+setEffect(LOOP,    VOLUME, GAIN, -12)
+setEffect(FILL,    VOLUME, GAIN, -8)
+setEffect(BASS,    VOLUME, GAIN, -4)
+setEffect(RHODES,  VOLUME, GAIN, -6)
+setEffect(WURLI,   VOLUME, GAIN, -9)
+setEffect(PIANO,   VOLUME, GAIN, -6)
+setEffect(PAD,     VOLUME, GAIN, -14)
+setEffect(BRASS,   VOLUME, GAIN, -8)
+setEffect(ANSWER,  VOLUME, GAIN, -10)
+setEffect(TRUMPET, VOLUME, GAIN, -8)
+setEffect(ARP,     VOLUME, GAIN, -12)
+setEffect(GUITAR,  VOLUME, GAIN, -10)
+setEffect(FX,      VOLUME, GAIN, -10)
+setEffect(ACID,    VOLUME, GAIN, -14)
+
+# Stereo width
+setEffect(RHODES,  PAN, LEFT_RIGHT, -30)
+setEffect(WURLI,   PAN, LEFT_RIGHT, 30)
+setEffect(GUITAR,  PAN, LEFT_RIGHT, -45)
+setEffect(ARP,     PAN, LEFT_RIGHT, 40)
+setEffect(OPENHAT, PAN, LEFT_RIGHT, 25)
+setEffect(HAT,     PAN, LEFT_RIGHT, -20)
+
+# Space: reverb and a dotted-eighth echo (128 BPM)
+setEffect(PAD,     REVERB, REVERB_TIME, 2500)
+setEffect(RHODES,  REVERB, REVERB_TIME, 900)
+setEffect(TRUMPET, REVERB, REVERB_TIME, 1200)
+setEffect(TRUMPET, DELAY, DELAY_TIME, 351)
+setEffect(TRUMPET, DELAY, DELAY_FEEDBACK, -14)
+setEffect(ARP,     DELAY, DELAY_TIME, 351)
+setEffect(ARP,     DELAY, DELAY_FEEDBACK,-12)
